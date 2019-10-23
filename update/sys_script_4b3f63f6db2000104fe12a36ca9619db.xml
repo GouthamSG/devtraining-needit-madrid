@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>false</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sys_email</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition table="sys_email">target_table=sysauto_report^EQ<item endquery="false" field="target_table" goto="false" newquery="false" operator="=" or="false" value="sysauto_report"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </filter_condition>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Inline Report Images</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[
+(function executeRule(current, previous /*null when async*/) { 
+  // check if tag is found in body 
+  if(current.body.indexOf('[embedded report]') == -1) 
+  { 
+    // if not found, leave everything alone 
+    return; 
+  } 
+   // get email attachments and set them to inline attachments 
+  var attach = new GlideRecord('sys_email_attachment'); 
+  attach.addQuery('email', '=', current.sys_id); 
+  attach.addQuery('attachment.content_type', 'STARTSWITH','image/'); // only images supported 
+  // set any attachments as being inline so they aren't attached 
+  attach.setValue('content_disposition', 'inline'); 
+  attach.updateMultiple(); 
+  // get the attachments to loop over 
+  attach.query(); 
+  // if  
+  if(attach.getRowCount() == 0) 
+  { 
+    gs.warn('No attachments, so nothing to inline'); 
+    current.body = current.body.replace('[embedded report]', 'Nothing to attach'); 
+    return; 
+  } 
+  var reportContent = ''; 
+  // add tags to inline all the images 
+  while(attach.next()) 
+  { 
+    reportContent += '<img id="img_' + attach.attachment + '" alt="' + attach.attachment.getDisplayValue() + '" src="sys_attachment.do?sys_id=' + attach.attachment + '"/>'; 
+  } 
+  // replace the tag in quotes since that can't have tags added to it.  This should be a smarter regex, but we'll brute force it for now 
+  current.body = current.body.replace('\'[embedded report]\'', ''); 
+  current.body = current.body.replace('"[embedded report]"', ''); 
+  // add the image tags 
+  current.body = current.body.replace('[embedded report]', reportContent); 
+  return; 
+
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-10-21 14:00:21</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>4b3f63f6db2000104fe12a36ca9619db</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Inline Report Images</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="NeedIt" source="x_58872_needit">6ead8e780f603200cd674f8ce1050ed1</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="NeedIt">6ead8e780f603200cd674f8ce1050ed1</sys_scope>
+        <sys_update_name>sys_script_4b3f63f6db2000104fe12a36ca9619db</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-10-21 14:00:21</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=4b3f63f6db2000104fe12a36ca9619db"/>
+</record_update>
